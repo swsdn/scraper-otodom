@@ -38,16 +38,21 @@ function run(pagesToScrape) {
 
 async function openNewPage(browser, url) {
     const page = await browser.newPage();
-    await page.setRequestInterception(true);
-    page.on('request', (request) => {
-        if (request.resourceType() === 'image') {
-            request.abort();
-        } else {
-            request.continue();
-        }
-    });
-    await page.goto(url);
-    return page;
+    try {
+        await page.setRequestInterception(true);
+        page.on('request', (request) => {
+            if (request.resourceType() === 'image') {
+                request.abort();
+            } else {
+                request.continue();
+            }
+        });
+        await page.goto(url);
+        return page;
+    } catch (e) {
+        console.error(`Failed to open ${url}`)
+        await page.close();
+    }
 }
 
 async function scrapAd(browser, url) {
@@ -68,8 +73,10 @@ async function scrapAd(browser, url) {
         await page.close()
         return result
     } catch (e) {
-        console.error(e)
-        await page.close()
+        console.error(`Failed to scrap ${url}`)
+        if (page) {
+            await page.close()
+        }
     }
 }
 
