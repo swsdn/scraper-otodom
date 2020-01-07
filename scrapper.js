@@ -68,7 +68,7 @@ async function scrapAd(browser, url) {
             let id = document.querySelector('div.css-kos6vh').innerText
             let name = document.querySelector('article > header > div > div > div > h1').innerText
             let location = Array.from(document.querySelector('article > section.section-breadcrumb > div > ul').childNodes).map(c => c.innerText).slice(2)
-            return { id, name, location, price, overview: overview, features };
+            return { id, name, location, price, overview: overview, features, url };
         });
         await page.close()
         return result
