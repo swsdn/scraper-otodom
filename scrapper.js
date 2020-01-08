@@ -5,6 +5,7 @@ if (!url) {
 console.log(url)
 
 const puppeteer = require('puppeteer')
+const fs = require('fs');
 
 run(5)
     .then(console.log)
@@ -16,20 +17,18 @@ function run(pagesToScrape) {
             const browser = await newBrowser();
             const page = await openNewPage(browser, url);
             let currentPage = 1;
-            let ads = [];
             while (currentPage <= pagesToScrape) {
                 let adUrls = await getAdUrls(page);
                 console.log(`${fDate()} Scraping page ${currentPage} of ${adUrls.length} ads`)
                 let adsOnPage = await Promise.all(adUrls.map(u => scrapAd(browser, u.url)))
-                ads = ads.concat(adsOnPage)
-                currentPage++;
+                fs.writeFileSync(`./out/page${currentPage++}.json`, JSON.stringify(adsOnPage))
                 const nextPageSelector = '#pagerForm > ul > li.pager-next > a'
                 await page.waitForSelector(nextPageSelector)
                 await page.click(nextPageSelector)
                 await page.waitForSelector(nextPageSelector)
             }
             browser.close();
-            return resolve(ads);
+            return resolve('finished');
         } catch (e) {
             return reject(e);
         }
