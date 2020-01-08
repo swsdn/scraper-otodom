@@ -6,7 +6,7 @@ console.log(url)
 
 const puppeteer = require('puppeteer')
 
-run(2)
+run(1)
     .then(console.log)
     .catch(console.error);
 
@@ -44,13 +44,14 @@ async function openNewPage(browser, url) {
             if (request.resourceType() === 'image') {
                 request.abort();
             } else {
+                console.log(`${new Date()} ${request.resourceType()}, ${request.url()}`)
                 request.continue();
             }
         });
         await page.goto(url);
         return page;
     } catch (e) {
-        console.error(`Failed to open ${url}`)
+        console.error(`Failed to open ${url} ${e}`)
         await page.close();
     }
 }
@@ -62,18 +63,17 @@ async function scrapAd(browser, url) {
             let price = document.querySelector('div.css-1vr19r7').innerText;
             let overview = Array.from(document.querySelector('section.section-overview > div > ul').childNodes)
                 .map(c => c.innerText)
-
             let features = Array.from(document.querySelector('section.section-features > div > ul').childNodes)
                 .map(c => c.innerText)
             let id = document.querySelector('div.css-kos6vh').innerText
             let name = document.querySelector('article > header > div > div > div > h1').innerText
             let location = Array.from(document.querySelector('article > section.section-breadcrumb > div > ul').childNodes).map(c => c.innerText).slice(2)
-            return { id, name, location, price, overview: overview, features, url };
+            return { id, name, location, price, overview, features, url: document.URL };
         });
         await page.close()
         return result
     } catch (e) {
-        console.error(`Failed to scrap ${url}`)
+        console.error(`Failed to scrap ${url} ${e}`)
         if (page) {
             await page.close()
         }
@@ -96,6 +96,7 @@ async function getAdUrls(page) {
 
 async function newBrowser() {
     return await puppeteer.launch({
+        userDataDir: './data',
         headless: false,
         defaultViewport: null,
         args: [`--window-size=1280,1024`]
