@@ -7,7 +7,7 @@ console.log(url)
 const puppeteer = require('puppeteer')
 const fs = require('fs');
 
-run(5)
+run(2)
     .then(console.log)
     .catch(console.error);
 
@@ -73,6 +73,7 @@ async function scrapAd(browser, url) {
     try {
         let result = await page.evaluate(() => {
             let price = document.querySelector('div.css-1vr19r7').innerText;
+            let freshness = document.querySelector('div.css-lh1bxu').innerText;
             let overview = Array.from(document.querySelector('section.section-overview > div > ul').childNodes)
                 .map(c => c.innerText)
             let fnodes = document.querySelector('section.section-features > div > ul')
@@ -80,7 +81,8 @@ async function scrapAd(browser, url) {
             let id = document.querySelector('div.css-kos6vh').innerText
             let name = document.querySelector('article > header > div > div > div > h1').innerText
             let location = Array.from(document.querySelector('article > section.section-breadcrumb > div > ul').childNodes).map(c => c.innerText).slice(2)
-            return { id, name, location, price, overview, features, url: document.URL };
+            let scrapTime = new Date().toISOString()
+            return { id, name, location, price, overview, features, url: document.URL, freshness, scrapTime };
         });
         await page.close()
         console.log(`${fDate()} Scrapped ${url}`)
