@@ -6,7 +6,7 @@ console.log(url)
 
 const puppeteer = require('puppeteer')
 
-run(1)
+run(5)
     .then(console.log)
     .catch(console.error);
 
@@ -18,15 +18,15 @@ function run(pagesToScrape) {
             let currentPage = 1;
             let ads = [];
             while (currentPage <= pagesToScrape) {
-                console.log(`Scrapping page ${currentPage}`)
-                const nexPageSelector = '#pagerForm > ul > li.pager-next > a'
-                await page.waitForSelector(nexPageSelector)
                 let adUrls = await getAdUrls(page);
+                console.log(`${fDate()} Scraping page ${currentPage} of ${adUrls.length} ads`)
                 let adsOnPage = await Promise.all(adUrls.map(u => scrapAd(browser, u.url)))
                 ads = ads.concat(adsOnPage)
                 currentPage++;
-                await page.click(nexPageSelector)
-                await page.waitForSelector(nexPageSelector)
+                const nextPageSelector = '#pagerForm > ul > li.pager-next > a'
+                await page.waitForSelector(nextPageSelector)
+                await page.click(nextPageSelector)
+                await page.waitForSelector(nextPageSelector)
             }
             browser.close();
             return resolve(ads);
@@ -44,16 +44,21 @@ async function openNewPage(browser, url) {
             if (request.resourceType() === 'image') {
                 request.abort();
             } else {
-                console.log(`${new Date()} ${request.resourceType()}, ${request.url()}`)
                 request.continue();
             }
         });
         await page.goto(url);
         return page;
     } catch (e) {
-        console.error(`Failed to open ${url} ${e}`)
+        console.error(`${fDate()} Failed to open ${url} ${e}`)
         await page.close();
     }
+}
+
+function fDate() {
+    let date = new Date();
+    let datef = date.toDateString() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "." + date.getMilliseconds();
+    return datef;
 }
 
 async function scrapAd(browser, url) {
@@ -71,9 +76,10 @@ async function scrapAd(browser, url) {
             return { id, name, location, price, overview, features, url: document.URL };
         });
         await page.close()
+        console.log(`${fDate()} Scrapped ${url}`)
         return result
     } catch (e) {
-        console.error(`Failed to scrap ${url} ${e}`)
+        console.error(`${fDate()} Failed to scrap ${url} ${e}`)
         if (page) {
             await page.close()
         }
@@ -97,7 +103,7 @@ async function getAdUrls(page) {
 async function newBrowser() {
     return await puppeteer.launch({
         userDataDir: './data',
-        headless: false,
+        headless: true,
         defaultViewport: null,
         args: [`--window-size=1280,1024`]
     });
