@@ -7,7 +7,7 @@ console.log(url)
 const puppeteer = require('puppeteer')
 const fs = require('fs');
 
-run(2)
+run(1)
     .then(console.log)
     .catch(console.error);
 
@@ -80,7 +80,9 @@ async function scrapAd(browser, url) {
             let features = fnodes ? Array.from(fnodes.childNodes).map(c => c.innerText) : []
             let id = document.querySelector('div.css-kos6vh').innerText
             let name = document.querySelector('article > header > div > div > div > h1').innerText
-            let location = Array.from(document.querySelector('article > section.section-breadcrumb > div > ul').childNodes).map(c => c.innerText).slice(2)
+            let location = Array.from(document.querySelector('article > section.section-breadcrumb > div > ul').childNodes)
+                .map(c => c.innerText)
+                .slice(2)
             let scrapTime = new Date().toISOString()
             return { id, name, location, price, overview, features, url: document.URL, freshness, scrapTime };
         });
@@ -112,7 +114,7 @@ async function getAdUrls(page) {
 async function newBrowser() {
     return await puppeteer.launch({
         userDataDir: './data',
-        headless: true,
+        headless: false,
         defaultViewport: null,
         args: [`--window-size=1280,1024`]
     });
