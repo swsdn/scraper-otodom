@@ -1,4 +1,5 @@
-const url = process.argv[2];
+const url = process.argv[3];
+const pages = process.argv[2];
 if (!url) {
     throw "Please provide a URL as the first argument";
 }
@@ -7,7 +8,7 @@ console.log(url)
 const puppeteer = require('puppeteer')
 const fs = require('fs');
 
-run(1)
+run(pages)
     .then(console.log)
     .catch(console.error);
 
@@ -114,7 +115,7 @@ async function getAdUrls(page) {
 async function newBrowser() {
     return await puppeteer.launch({
         userDataDir: './data',
-        headless: false,
+        headless: true,
         defaultViewport: null,
         args: [`--window-size=1280,1024`]
     });
