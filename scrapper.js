@@ -22,10 +22,7 @@ function run(pagesToScrape) {
                 let adUrls = await getAdUrls(page);
                 console.log(`${fDate()} Scraping page ${currentPage} of ${adUrls.length} ads`)
                 let adsOnPage = await Promise.all(adUrls.map(u => scrapAd(browser, u.url)))
-                if (!fs.existsSync('./out')) {
-                    fs.mkdirSync('./out')
-                }
-                fs.writeFileSync(`./out/page${currentPage}.json`, JSON.stringify(adsOnPage))
+                save(currentPage, adsOnPage)
                 currentPage++
                 if (currentPage < pagesToScrape) {
                     const nextPageSelector = '#pagerForm > ul > li.pager-next > a'
@@ -40,6 +37,17 @@ function run(pagesToScrape) {
             return reject(e);
         }
     })
+}
+
+function save(currentPage, adsOnPage) {
+    const now = new Date()
+    const date = `${now.getFullYear()}${("0" + (now.getMonth() + 1)).slice(-2)}${("0" + now.getDate()).slice(-2)}`
+    const time = `${("0" + now.getHours()).slice(-2)}${("0" + (now.getMinutes())).slice(-2)}`
+    const folder = `${date}${time}`
+    if (!fs.existsSync(`./out/${folder}`)) {
+        fs.mkdirSync(`./out/${folder}`);
+    }
+    fs.writeFileSync(`./out/${folder}/page${currentPage}.json`, JSON.stringify(adsOnPage));
 }
 
 async function openNewPage(browser, url, sameOriginResources = true) {
